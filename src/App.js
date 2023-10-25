@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import Worker from "worker-loader!./combinations.worker";
-import logo from "./logo.png";
+import logo from "./hovercode.svg";
 
 function App() {
   const [input, setInput] = useState("");
@@ -8,7 +8,33 @@ function App() {
   const [combinations, setCombinations] = useState([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [isScaled, setIsScaled] = useState(false);
   const workerRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      const scaledElement = document.getElementById("scaled-element");
+
+      if (scaledElement && isScaled && !scaledElement.contains(event.target)) {
+        setIsScaled(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isScaled]);
+
+  const handleImageClick = () => {
+    if (!isScaled) {
+      setIsScaled(true);
+    } else {
+      // Redirect to the repository URL when the scaled image is clicked
+      window.open("https://github.com/marcusdavidalo/anychargen", "_blank");
+    }
+  };
 
   useEffect(() => {
     workerRef.current = new Worker();
@@ -63,17 +89,21 @@ function App() {
   };
 
   return (
-    <div className="bg-slate-900 text-white flex items-center justify-center h-screen font-mono">
+    <div className="bg-slate-900 text-white flex items-center justify-center font-mono overflow-scroll min-h-screen max-h-full">
       <div className="bg-white/20 border-slate-400/80 border rounded-md shadow-lg p-6 max-w-md">
         <div className="flex justify-between w-auto gap-2 h-10 mb-4">
-          <h1 className="text-3xl font-bold mb-2">AnyChar Gen</h1>
-          <a
-            href="https://github.com/marcusdavidalo/savertracker"
-            title="To AnyChar Generator Repository"
-            className="w-10 h-auto"
-          >
-            <img src={logo} alt="AnyChar Generator Logo" />
-          </a>
+          <h1 className="text-3xl font-bold mb-2 whitespace-nowrap">
+            AnyChar Gen
+          </h1>
+          <img
+            id="scaled-element"
+            onClick={handleImageClick}
+            src={logo}
+            alt="AnyChar Generator Logo"
+            className={`w-10 h-auto transition-transform duration-300 ease-in-out hover:z-50 rounded-full hover:cursor-pointer ${
+              isScaled ? "-translate-x-44 translate-y-72 scale-[10]" : ""
+            }`}
+          />
         </div>
         <div className="mb-6">
           <p className="text-gray-400 max-w-sm">
